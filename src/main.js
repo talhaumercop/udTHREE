@@ -4,9 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gsap from 'gsap/src';
-import { clearcoatRoughness, deltaTime, renderGroup, step } from 'three/tsl';
-import { Vector3 } from 'three/webgpu';
-
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 // 🏗️ Scene Setup
 const scene = new THREE.Scene();
 // const fog = new THREE.Fog('orange', 0, 30);
@@ -48,7 +46,7 @@ document.body.appendChild(renderer.domElement);
 
 // // 🌄 Environment (HDRI)
 const rgbeLoader = new RGBELoader();
-rgbeLoader.load('/hdri/hdri.hdr', (texture) => {
+rgbeLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/rogland_clear_night_1k.hdr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = texture;
   // scene.background = texture; // Optional: uncomment to set background
@@ -119,12 +117,7 @@ loader.load(
       node.receiveShadow = true;
 
     });
-    // sprite()
   },
-  // undefined,
-  // (error) => {
-  //   console.error('❌ Error loading model:', error);
-  // }
 );
 //LOADING FIREWORK
 let model;
@@ -177,31 +170,47 @@ loader.load('character.glb', (gltf) => {
   setThirdPersonCamera(player);
 
 })
-// //icons
-// let spriteEnter;
-// let spriteExit;
-// const sprite = () => {
-//   const mapEnter = new THREE.TextureLoader().load('/Enter.png');
-//   const materialEnter = new THREE.SpriteMaterial({ map: mapEnter, color: 0xffffff });
 
-//   spriteEnter = new THREE.Sprite(materialEnter);
-//   const iconsEnterPosition = scene.getObjectByName('iconsEnter')
-//   spriteEnter.position.copy(iconsEnterPosition.position)
-//   spriteEnter.scale.set(0.35, 0.35, 0.35)
-//   scene.add(spriteEnter);
-//   spriteEnter.name = "spriteEnter"
+let mixerdance,mixerdance2,mixerdance3
+loader.load('dance.glb', (gltf) => {
+  const danceplayer = gltf.scene// 💥 store only the scene!
+  const danceplayer2 = clone(danceplayer)// clone the character
+  const danceplayer3 = clone(danceplayer)// clone the character
+  scene.add(danceplayer);
+  scene.add(danceplayer2);
+  scene.add(danceplayer3);
 
-//   const mapExit = new THREE.TextureLoader().load('/Exit.png');
-//   const materialExit = new THREE.SpriteMaterial({ map: mapExit, color: 0xffffff });
-//   spriteExit = new THREE.Sprite(materialExit);
-//   const iconsExitPosition = scene.getObjectByName('iconsExit')
-//   spriteExit.position.copy(iconsExitPosition.position)
-//   spriteExit.scale.set(0.2, 0.2, 0.2)
-//   spriteExit.name = "spriteExit"
-//   scene.add(spriteExit);
-//   objectsToIntersect.push(spriteEnter);
-//   objectsToIntersect.push(spriteExit);
-// }
+  danceplayer.traverse((node) => {
+    node.castShadow = true;
+    node.receiveShadow = true;
+  })
+  danceplayer2.traverse((node) => {
+    node.castShadow = true;
+    node.receiveShadow = true;
+  })
+  danceplayer3.traverse((node) => {
+    node.castShadow = true;
+    node.receiveShadow = true;
+  })
+  
+  danceplayer.position.set(10,0,4);
+  danceplayer.scale.set(3,3,3);
+  danceplayer2.position.set(10,0,0);
+  danceplayer2.scale.set(3,3,3);
+  danceplayer3.position.set(20,0,4);
+  danceplayer3.scale.set(3,3,3);
+  mixerdance = new THREE.AnimationMixer(danceplayer); // ✅ use the correct model
+  const dance= new THREE.AnimationAction(mixerdance,gltf.animations[0])
+  mixerdance2 = new THREE.AnimationMixer(danceplayer2); // ✅ use the correct model
+  const dance2= new THREE.AnimationAction(mixerdance2,gltf.animations[0])
+  mixerdance3 = new THREE.AnimationMixer(danceplayer3); // ✅ use the correct model
+  const dance3= new THREE.AnimationAction(mixerdance3,gltf.animations[0])
+  // 🎬 Play the idle animation by defaul
+  dance.play();
+  dance2.play();
+  dance3.play();
+})
+
 // 🌞🌍🌑 Dynamic Effect: Sun, Earth, Moon
 const dynamicEffect = (e) => {
   // ☀️ Sun
@@ -301,98 +310,6 @@ function castingRay() {
         });
       }
     }
-    // // Check for door interaction
-    // else if (intersects[0].object.userData['doorFather'] ) {
-    //   const door = scene.getObjectByName('door');
-    //   // Check if the door is already open or closed
-    //   console.log('Door clicked!', door);
-    //   if (!intersects[0].object.userData['isOpen'] && !door.userData['isOpening']) {
-    //     door.userData['isOpening'] = true
-    //     gsap.to(door.rotation, {
-    //       y: -Math.PI / 2, // Rotate to open the door
-    //       duration: 1,
-    //       onComplete: () => {
-    //         camera.getWorldPosition(camerWorldPosition);
-    //         camera.getWorldQuaternion(cameraWorldRotation)
-    //         const curve = new THREE.CatmullRomCurve3([
-    //           camerWorldPosition,
-    //           scene.getObjectByName('doorTarget').position,
-    //           scene.getObjectByName('seatTarget').position,
-    //         ], false);
-
-    //         const points1 = curve.getPoints(50);
-    //         const geometry1 = new THREE.BufferGeometry().setFromPoints(points1);
-    //         const material1 = new THREE.LineBasicMaterial({ color: 0xff0000 });
-    //         const curveObject = new THREE.Line(geometry1, material1);
-    //         scene.add(curveObject);
-    //         curveObject.visible = false
-
-    //         //camera flying logic is based herer
-    //         cameraFLY.position.copy(camerWorldPosition);
-    //         cameraFLY.quaternion.copy(cameraWorldRotation)
-    //         camera.visible = false;
-    //         cameraFLY.visible = true;
-
-    //         let cameraFlyPos;
-    //         let stepObj = { step: 0 }
-    //         let carTarget = scene.getObjectByName('carTarget').position
-
-    //         gsap.to(stepObj, {
-    //           step: 1000,
-    //           duration: 5,
-    //           onUpdate: () => {
-    //             cameraFlyPos = curve.getPointAt(stepObj.step / 1000);
-    //             cameraFLY.position.copy(cameraFlyPos);
-    //             cameraFLY.lookAt(carTarget);
-    //           },
-    //           onComplete: () => {
-    //             gsap.to(door.rotation, {
-    //               y: 0,
-    //               duration: 1,
-    //             });
-    //             door.userData['isOpening'] = false
-                // const car = scene.getObjectByName('car')
-                // car.visible = false
-
-                // if (!sphere) {
-                //   const texture = new THREE.TextureLoader().load('/carPanaroma.jpg')
-                //   const sphereGeo = new THREE.SphereGeometry(3)
-                //   const sphereMaterial = new THREE.MeshBasicMaterial({
-                //     side: THREE.DoubleSide,
-                //     map: texture
-                //   })
-                //   sphere = new THREE.Mesh(sphereGeo, sphereMaterial)
-                //   sphere.name = 'sphereCarPanaroma'
-                //   scene.add(sphere)
-                //   sphere.rotateY(-Math.PI / 2)
-                //   sphere.position.copy(scene.getObjectByName('seatTarget').position)
-                // }else{
-                //   sphere.visible = true
-                // }
-    //           }
-    //         })
-    //       }
-    //     });
-    //     intersects[0].object.userData['isOpen'] = true
-    //   } else {
-    //     gsap.to(door.rotation, {
-    //       y: 0,
-    //       duration: 1,
-    //     });
-    //     intersects[0].object.userData['isOpen'] = false
-    //   }
-    // }
-  // } else if (intersects[0].object === spriteExit) {
-  //   if (sphere) {
-  //     sphere.visible = false;
-  //     const car = scene.getObjectByName('car');
-  //     if (car) {
-  //       car.visible = true;
-  //     }
-  //     // Switch back to main camera
-  //     cameraFLY.visible = false;
-  //     camera.visible = true;
-  //   }
  }
   
 }
@@ -420,6 +337,7 @@ const playerFront = new THREE.Vector3(0, 0, 0);
 // Modify the keydown event listener
 window.addEventListener('keydown', (event) => {
   if (event.key === 'w') {
+    console.log("player")
     if (player) {
       console.log('W key pressed!');
       // player.rotation.copy(visualTargetMesh.rotation);
@@ -615,7 +533,11 @@ function animate() {
 
   if (mixer) mixer.update(delta);
   if (mixer01) mixer01.update(delta);
-
+  if(mixerdance && mixerdance2 && mixerdance3){
+    mixerdance.update(delta);
+    mixerdance2.update(delta);
+    mixerdance3.update(delta);
+  }
   // // 🌌 Planet Rotations
   if (sunMesh && earthMesh && moonMesh) {
     sunMesh.rotation.y += 0.002;
