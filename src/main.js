@@ -85,7 +85,8 @@ let mixer;
 let car01;
 let sunMesh, earthMesh, moonMesh;
 let hasEffectAdded = false;
-
+    
+let mixerdance,mixerdance2,mixerdance3
 // 🚗 Load GLTF Model
 const loader = new GLTFLoader();
 const objects = [];
@@ -117,8 +118,49 @@ loader.load(
       node.receiveShadow = true;
 
     });
+    loader.load('dance.glb', (gltf) => {
+      const danceplayer = gltf.scene// 💥 store only the scene!
+      danceplayer.position.copy(scene.getObjectByName('danceTarget').position.clone().add(new THREE.Vector3(0,0,0)))
+      danceplayer.rotateY(-Math.PI/2)
+      const danceplayer2 = clone(danceplayer)// clone the character
+      danceplayer2.position.copy(scene.getObjectByName('danceTarget2').position.clone().add(new THREE.Vector3(0,0,0)))
+      const danceplayer3 = clone(danceplayer)// clone the character
+      danceplayer3.position.copy(scene.getObjectByName('danceTarget3').position.clone().add(new THREE.Vector3(0,0,0)))
+      scene.add(danceplayer);
+      scene.add(danceplayer2);
+      scene.add(danceplayer3);
+    
+      danceplayer.traverse((node) => {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      })
+      danceplayer2.traverse((node) => {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      })
+      danceplayer3.traverse((node) => {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      })
+      
+      danceplayer.scale.set(3,3,3);
+      danceplayer2.scale.set(3,3,3);
+      danceplayer3.scale.set(3,3,3);
+      mixerdance = new THREE.AnimationMixer(danceplayer); // ✅ use the correct model
+      const dance= new THREE.AnimationAction(mixerdance,gltf.animations[0])
+      mixerdance2 = new THREE.AnimationMixer(danceplayer2); // ✅ use the correct model
+      const dance2= new THREE.AnimationAction(mixerdance2,gltf.animations[0])
+      mixerdance3 = new THREE.AnimationMixer(danceplayer3); // ✅ use the correct model
+      const dance3= new THREE.AnimationAction(mixerdance3,gltf.animations[0])
+      // 🎬 Play the idle animation by defaul
+      dance.play();
+      dance2.play();
+      dance3.play();
+    })
+
   },
 );
+
 //LOADING FIREWORK
 let model;
 // loader.load(
@@ -171,45 +213,6 @@ loader.load('character.glb', (gltf) => {
 
 })
 
-let mixerdance,mixerdance2,mixerdance3
-loader.load('dance.glb', (gltf) => {
-  const danceplayer = gltf.scene// 💥 store only the scene!
-  const danceplayer2 = clone(danceplayer)// clone the character
-  const danceplayer3 = clone(danceplayer)// clone the character
-  scene.add(danceplayer);
-  scene.add(danceplayer2);
-  scene.add(danceplayer3);
-
-  danceplayer.traverse((node) => {
-    node.castShadow = true;
-    node.receiveShadow = true;
-  })
-  danceplayer2.traverse((node) => {
-    node.castShadow = true;
-    node.receiveShadow = true;
-  })
-  danceplayer3.traverse((node) => {
-    node.castShadow = true;
-    node.receiveShadow = true;
-  })
-  
-  danceplayer.position.set(10,0,4);
-  danceplayer.scale.set(3,3,3);
-  danceplayer2.position.set(10,0,0);
-  danceplayer2.scale.set(3,3,3);
-  danceplayer3.position.set(20,0,4);
-  danceplayer3.scale.set(3,3,3);
-  mixerdance = new THREE.AnimationMixer(danceplayer); // ✅ use the correct model
-  const dance= new THREE.AnimationAction(mixerdance,gltf.animations[0])
-  mixerdance2 = new THREE.AnimationMixer(danceplayer2); // ✅ use the correct model
-  const dance2= new THREE.AnimationAction(mixerdance2,gltf.animations[0])
-  mixerdance3 = new THREE.AnimationMixer(danceplayer3); // ✅ use the correct model
-  const dance3= new THREE.AnimationAction(mixerdance3,gltf.animations[0])
-  // 🎬 Play the idle animation by defaul
-  dance.play();
-  dance2.play();
-  dance3.play();
-})
 
 // 🌞🌍🌑 Dynamic Effect: Sun, Earth, Moon
 const dynamicEffect = (e) => {
