@@ -5,6 +5,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gsap from 'gsap/src';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { CSS2DRenderer , CSS2DObject} from 'three/examples/jsm/Addons.js';
+
+
+
 // 🏗️ Scene Setup
 const scene = new THREE.Scene();
 // const fog = new THREE.Fog('orange', 0, 30);
@@ -177,6 +181,27 @@ let model;
 //     console.error('❌ Error loading firework model:', error);
 //   }
 // );
+
+let labelRenderer;
+function setPlayerName(){
+  labelRenderer = new CSS2DRenderer();
+  labelRenderer.setSize(window.innerWidth,window.innerHeight);
+  labelRenderer.domElement.style.position='absolute'
+  labelRenderer.domElement.style.top='0px'
+  document.body.appendChild(labelRenderer.domElement);
+
+
+  const namDiv=document.createElement('div')
+  //suggest me a player name that cute:
+  namDiv.textContent='FLICKY'
+  namDiv.style.cssText='color:white;font-size:14px;font-family:Arial;background-color:rgba(2, 85, 241, 0.5);padding:10px;border-radius:5px;'
+
+  const nameLabel= new CSS2DObject(namDiv)
+  player.add(nameLabel)
+  nameLabel.position.set(0,2.1,0)
+
+}
+
 let clipIdle
 let model01
 let mixer01;
@@ -187,7 +212,7 @@ let actionIdle
 let actionWalk
 let actionRun
 //loading character
-loader.load('character.glb', (gltf) => {
+loader.load('characteranimation.glb', (gltf) => {
   player = gltf.scene// 💥 store only the scene!
   model01 = gltf// 💥 store only the scene!
   scene.add(gltf.scene);
@@ -210,7 +235,7 @@ loader.load('character.glb', (gltf) => {
   actionIdle.play();
 
   setThirdPersonCamera(player);
-
+  setPlayerName()
 })
 
 
@@ -553,6 +578,9 @@ function animate() {
   }
   if (cameraFLY.visible === true) {
     renderer.render(scene, cameraFLY);
+  }
+  if(labelRenderer){
+    labelRenderer.render(scene,camera)
   }
 
 }
