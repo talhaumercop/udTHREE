@@ -5,7 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gsap from 'gsap/src';
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { CSS2DRenderer , CSS2DObject} from 'three/examples/jsm/Addons.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/Addons.js';
 
 
 
@@ -40,17 +40,19 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
-// renderer.physicallyCorrectLights = true;
+// renderer.toneMappingExposure = 1.25; // tweak for brightness
+renderer.physicallyCorrectLights = true;
 // renderer.setClearColor('orange', 1.0); // Set background color to transparent
 document.body.appendChild(renderer.domElement);
 
+// const axisHelper = new THREE.AxesHelper(5);
+// scene.add(axisHelper);
 // 🕹️ Controls
 //const controls = new OrbitControls(camera, renderer.domElement);
 
 // // 🌄 Environment (HDRI)
 const rgbeLoader = new RGBELoader();
-rgbeLoader.load('https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/rogland_clear_night_1k.hdr', (texture) => {
+rgbeLoader.load('/hdri/hdri.hdr', (texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.environment = texture;
   // scene.background = texture; // Optional: uncomment to set background
@@ -61,7 +63,7 @@ const textureLoader = new THREE.TextureLoader();
 const star = textureLoader.load('/texture/star.png');
 
 // 💡 Lighting Setup
-const directionalLight = new THREE.DirectionalLight("white", 1);
+const directionalLight = new THREE.DirectionalLight("white", 4);
 directionalLight.position.set(30, 50, 40);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
@@ -89,8 +91,8 @@ let mixer;
 let car01;
 let sunMesh, earthMesh, moonMesh;
 let hasEffectAdded = false;
-    
-let mixerdance,mixerdance2,mixerdance3
+
+let mixerdance, mixerdance2, mixerdance3
 // 🚗 Load GLTF Model
 const loader = new GLTFLoader();
 const objects = [];
@@ -124,16 +126,16 @@ loader.load(
     });
     loader.load('dance.glb', (gltf) => {
       const danceplayer = gltf.scene// 💥 store only the scene!
-      danceplayer.position.copy(scene.getObjectByName('danceTarget').position.clone().add(new THREE.Vector3(0,0,0)))
-      danceplayer.rotateY(-Math.PI/2)
+      danceplayer.position.copy(scene.getObjectByName('danceTarget').position.clone().add(new THREE.Vector3(0, 0, 0)))
+      danceplayer.rotateY(Math.PI / 2)
       const danceplayer2 = clone(danceplayer)// clone the character
-      danceplayer2.position.copy(scene.getObjectByName('danceTarget2').position.clone().add(new THREE.Vector3(0,0,0)))
+      danceplayer2.position.copy(scene.getObjectByName('danceTarget2').position.clone().add(new THREE.Vector3(0, 0, 0)))
       const danceplayer3 = clone(danceplayer)// clone the character
-      danceplayer3.position.copy(scene.getObjectByName('danceTarget3').position.clone().add(new THREE.Vector3(0,0,0)))
+      danceplayer3.position.copy(scene.getObjectByName('danceTarget3').position.clone().add(new THREE.Vector3(0, 0, 0)))
       scene.add(danceplayer);
       scene.add(danceplayer2);
       scene.add(danceplayer3);
-    
+
       danceplayer.traverse((node) => {
         node.castShadow = true;
         node.receiveShadow = true;
@@ -146,22 +148,26 @@ loader.load(
         node.castShadow = true;
         node.receiveShadow = true;
       })
-      
-      danceplayer.scale.set(3,3,3);
-      danceplayer2.scale.set(3,3,3);
-      danceplayer3.scale.set(3,3,3);
+
+      danceplayer.scale.set(3, 3, 3);
+      danceplayer2.scale.set(3, 3, 3);
+      danceplayer3.scale.set(3, 3, 3);
       mixerdance = new THREE.AnimationMixer(danceplayer); // ✅ use the correct model
-      const dance= new THREE.AnimationAction(mixerdance,gltf.animations[0])
+      const dance = new THREE.AnimationAction(mixerdance, gltf.animations[0])
       mixerdance2 = new THREE.AnimationMixer(danceplayer2); // ✅ use the correct model
-      const dance2= new THREE.AnimationAction(mixerdance2,gltf.animations[0])
+      const dance2 = new THREE.AnimationAction(mixerdance2, gltf.animations[0])
       mixerdance3 = new THREE.AnimationMixer(danceplayer3); // ✅ use the correct model
-      const dance3= new THREE.AnimationAction(mixerdance3,gltf.animations[0])
+      const dance3 = new THREE.AnimationAction(mixerdance3, gltf.animations[0])
       // 🎬 Play the idle animation by defaul
       dance.play();
       dance2.play();
       dance3.play();
-    })
 
+
+
+
+    })
+    addGameTree()
   },
 );
 
@@ -183,25 +189,75 @@ let model;
 // );
 
 let labelRenderer;
-function setPlayerName(){
+function setPlayerName() {
   labelRenderer = new CSS2DRenderer();
-  labelRenderer.setSize(window.innerWidth,window.innerHeight);
-  labelRenderer.domElement.style.position='absolute'
-  labelRenderer.domElement.style.top='0px'
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.domElement.style.position = 'absolute'
+  labelRenderer.domElement.style.top = '0px'
   document.body.appendChild(labelRenderer.domElement);
 
 
-  const namDiv=document.createElement('div')
+  const namDiv = document.createElement('div')
   //suggest me a player name that cute:
-  namDiv.textContent='FLICKY'
-  namDiv.style.cssText='color:white;font-size:14px;font-family:Arial;background-color:rgba(2, 85, 241, 0.5);padding:10px;border-radius:5px;'
+  namDiv.textContent = 'FLICKY'
+  namDiv.style.cssText = 'color:white;font-size:14px;font-family:Arial;background-color:rgba(2, 85, 241, 0.5);padding:10px;border-radius:5px;'
 
-  const nameLabel= new CSS2DObject(namDiv)
+  const nameLabel = new CSS2DObject(namDiv)
   player.add(nameLabel)
-  nameLabel.position.set(0,2.1,0)
+  nameLabel.position.set(0, 2.1, 0)
 
 }
 
+function addGameTree() {
+  const treeLeftStart = scene.getObjectByName('sideleftStart')
+  const treeLeftEnd = scene.getObjectByName('sideleftEnd')
+  const treeRightStart = scene.getObjectByName('siderightStart')
+  const treeRightEnd = scene.getObjectByName('siderightEnd')
+
+  loader.load(
+    'tree.glb',
+    (gltfLeft) => {
+      const tree = gltfLeft// 💥 store only the scene!
+      const treePosition=new THREE.Vector3()
+      const treeCount=8;
+      for(let i=0;i<treeCount;i++){
+        treePosition.lerpVectors(treeLeftStart.position,treeLeftEnd.position,i/treeCount)
+        const treeClone=tree.scene.clone()
+        treeClone.position.copy(treePosition)
+        scene.add(treeClone)
+
+        gsap.to(treeClone.position, {
+          x: treeLeftEnd.position.x,
+          y: treeLeftEnd.position.y,
+          z: treeLeftEnd.position.z,
+          duration: 8-i,
+          ease: 'none',
+          onComplete:()=>{
+            treeClone.position.copy(treeLeftStart.position)
+            gsap.to(treeClone.position, {
+              x: treeLeftEnd.position.x,
+              y: treeLeftEnd.position.y,
+              z: treeLeftEnd.position.z,
+              duration:8,
+              ease:'none',
+              repeat:-1
+            })
+          }
+        })
+      }
+     
+      gltfLeft.scene.traverse((node) => {
+        objects.push(node);
+        node.castShadow = true;
+        node.receiveShadow = true;
+      })
+    },
+    undefined,
+    (error) => {
+      console.error('❌ Error loading firework model:', error);
+    }
+  );
+}
 let clipIdle
 let model01
 let mixer01;
@@ -283,22 +339,48 @@ const dynamicEffect = (e) => {
   earthMesh.add(moonMesh);
 };
 dynamicEffect()
-// ✨ Stars / Particles Effect
-const vertices = [];
-for (let i = 0; i < 600; i++) {
-  const x = THREE.MathUtils.randFloatSpread(200);
-  const y = THREE.MathUtils.randFloatSpread(200);
-  const z = THREE.MathUtils.randFloatSpread(200);
-  vertices.push(x, y, z);
+
+// Create geometry with N points
+const count = 500;
+const positions = new Float32Array(count * 3); // x, y, z
+const colors = new Float32Array(count * 3);    // r, g, b
+
+for (let i = 0; i < count; i++) {
+  const i3 = i * 3;
+
+  // Random position
+  positions[i3 + 0] = (Math.random() - 0.5) * 60;
+  positions[i3 + 1] = (Math.random() - 0.5) * 60;
+  positions[i3 + 2] = (Math.random() - 0.5) * 60;
+
+  // Random color using THREE.Color
+  const color = new THREE.Color(Math.random(), Math.random(), Math.random());
+
+  colors[i3 + 0] = color.r;
+  colors[i3 + 1] = color.g;
+  colors[i3 + 2] = color.b;
 }
+
+// Create geometry and add attributes
 const geometry = new THREE.BufferGeometry();
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-const material = new THREE.PointsMaterial({ size: 2, color: 'white', map: star, transparent: true });
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+// Material with vertex colors enabled
+const material = new THREE.PointsMaterial({
+  size: 1,
+  map: star,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  vertexColors: true,
+});
+
+// Create and add points to scene
 const points = new THREE.Points(geometry, material);
+scene.add(points);
 
 // 🎬 GSAP Animation for Stars
-gsap.to(points.position, { x: 28, duration: 30, repeat: -1, yoyo: true, ease: 'ease' });
-scene.add(points);
+gsap.to(points.position, { x: 28, duration: 50, repeat: -1, yoyo: true, ease: 'ease' });
 // Update the raycaster setup
 const pointer = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
@@ -338,8 +420,8 @@ function castingRay() {
         });
       }
     }
- }
-  
+  }
+
 }
 
 // Update the click event listener
@@ -365,9 +447,8 @@ const playerFront = new THREE.Vector3(0, 0, 0);
 // Modify the keydown event listener
 window.addEventListener('keydown', (event) => {
   if (event.key === 'w') {
-    console.log("player")
+
     if (player) {
-      console.log('W key pressed!');
       // player.rotation.copy(visualTargetMesh.rotation);
       const playDirection = new THREE.Vector3();
       player.getWorldDirection(playDirection);
@@ -402,13 +483,10 @@ window.addEventListener('keydown', (event) => {
 
       // Then check for intersections
       const frontCollision = raycasterFront.intersectObjects(scene.children, true);
-
-      console.log(frontCollision);
-
       // Only allow movement if no collision is detected or collision is far enough
       if (frontCollision.length === 0 || frontCollision[0].distance > 1) {
         if (!isMoving) {
-          crossPlay(actionIdle, actionWalk);
+          crossPlay(actionIdle, actionRun);
           isMoving = true;
         }
         if (!preWalkTime) {
@@ -419,7 +497,7 @@ window.addEventListener('keydown', (event) => {
         //   isRunning = true;
         // }
         if (isMoving) {
-          player.translateZ(0.1);
+          player.translateZ(0.3);
         }
         // if(isRunning){
         //   player.translateZ(0.2);
@@ -433,7 +511,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => {
   if (event.key === 'w') {
     if (isMoving) {
-      crossPlay(actionWalk, actionIdle);
+      crossPlay(actionRun, actionIdle);
       isMoving = false;
     }
     preWalkTime = 0;
@@ -561,7 +639,7 @@ function animate() {
 
   if (mixer) mixer.update(delta);
   if (mixer01) mixer01.update(delta);
-  if(mixerdance && mixerdance2 && mixerdance3){
+  if (mixerdance && mixerdance2 && mixerdance3) {
     mixerdance.update(delta);
     mixerdance2.update(delta);
     mixerdance3.update(delta);
@@ -579,8 +657,8 @@ function animate() {
   if (cameraFLY.visible === true) {
     renderer.render(scene, cameraFLY);
   }
-  if(labelRenderer){
-    labelRenderer.render(scene,camera)
+  if (labelRenderer) {
+    labelRenderer.render(scene, camera)
   }
 
 }
