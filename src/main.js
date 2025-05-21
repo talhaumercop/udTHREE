@@ -207,24 +207,26 @@ function setPlayerName() {
   nameLabel.position.set(0, 2.1, 0)
 
 }
-
+let setRandomScale;
 function addGameTree() {
   const treeLeftStart = scene.getObjectByName('sideleftStart')
   const treeLeftEnd = scene.getObjectByName('sideleftEnd')
   const treeRightStart = scene.getObjectByName('siderightStart')
   const treeRightEnd = scene.getObjectByName('siderightEnd')
-
   loader.load(
     'tree.glb',
     (gltfLeft) => {
       const tree = gltfLeft// 💥 store only the scene!
       const treePosition=new THREE.Vector3()
       const treeCount=8;
+      //leftside
       for(let i=0;i<treeCount;i++){
         treePosition.lerpVectors(treeLeftStart.position,treeLeftEnd.position,i/treeCount)
+        setRandomScale=(Math.random())/2+ 0.5
         const treeClone=tree.scene.clone()
         treeClone.position.copy(treePosition)
         scene.add(treeClone)
+        treeClone.scale.set(setRandomScale,setRandomScale,setRandomScale)
 
         gsap.to(treeClone.position, {
           x: treeLeftEnd.position.x,
@@ -245,7 +247,34 @@ function addGameTree() {
           }
         })
       }
-     
+      //rightside
+      for(let i=0;i<treeCount;i++){
+        treePosition.lerpVectors(treeRightStart.position,treeRightStart.position,i/treeCount)
+        setRandomScale=(Math.random())/2+ 0.5
+        const treeClone=tree.scene.clone()
+        treeClone.position.copy(treePosition)
+        scene.add(treeClone)
+        treeClone.scale.set(setRandomScale,setRandomScale,setRandomScale)
+
+        gsap.to(treeClone.position, {
+          x: treeRightEnd.position.x,
+          y: treeRightEnd.position.y,
+          z: treeRightEnd.position.z,
+          duration: 8-i,
+          ease: 'none',
+          onComplete:()=>{
+            treeClone.position.copy(treeRightStart.position)
+            gsap.to(treeClone.position, {
+              x: treeRightEnd.position.x,
+              y: treeRightEnd.position.y,
+              z: treeRightEnd.position.z,
+              duration:8,
+              ease:'none',
+              repeat:-1
+            })
+          }
+        })
+      }
       gltfLeft.scene.traverse((node) => {
         objects.push(node);
         node.castShadow = true;
